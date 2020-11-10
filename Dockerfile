@@ -61,22 +61,10 @@ RUN mkdir -p /etc/OpenCL/vendors && \
     echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
 
 #################################################################################################################
-#           CONDA
+#           PYTHON
 #################################################################################################################
 
-ARG CONDA_DIR=/opt/conda
-# add to path
-ENV PATH $CONDA_DIR/bin:$PATH
-
-# Install miniconda
-RUN echo "export PATH=$CONDA_DIR/bin:"'$PATH' > /etc/profile.d/conda.sh && \
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    /bin/bash ~/miniconda.sh -b -p $CONDA_DIR && \
-    rm ~/miniconda.sh
-
-RUN conda config --set always_yes yes --set changeps1 no && \
-    conda create -y -q -n py2 python=2.7 mkl numpy scipy scikit-learn jupyter notebook ipython pandas matplotlib jupyterlab && \
-    conda create -y -q -n py3 python=3.6 mkl numpy scipy scikit-learn jupyter notebook ipython pandas matplotlib jupyterlab
+RUN pip3 install mkl numpy scipy scikit-learn jupyter notebook ipython pandas matplotlib jupyterlab
 
 #################################################################################################################
 #           LightGBM
@@ -90,16 +78,4 @@ RUN cd /usr/local/src && mkdir lightgbm && cd lightgbm && \
 
 ENV PATH /usr/local/src/lightgbm/LightGBM:${PATH}
 
-RUN /bin/bash -c "source activate py2 && cd /usr/local/src/lightgbm/LightGBM/python-package && python setup.py install --precompile && source deactivate"
-RUN /bin/bash -c "source activate py3 && cd /usr/local/src/lightgbm/LightGBM/python-package && python setup.py install --precompile && source deactivate"
-
-#################################################################################################################
-#           System CleanUp
-#################################################################################################################
-# apt-get autoremove: used to remove packages that were automatically installed to satisfy dependencies for some package and that are no more needed.
-# apt-get clean: removes the aptitude cache in /var/cache/apt/archives. You'd be amazed how much is in there! the only drawback is that the packages
-# have to be downloaded again if you reinstall them.
-
-RUN apt-get autoremove -y && apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    conda clean -a -y
+RUN /bin/bash -c "cd /usr/local/src/lightgbm/LightGBM/python-package && python setup.py install --precompile && source deactivate"
