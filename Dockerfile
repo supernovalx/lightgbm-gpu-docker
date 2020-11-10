@@ -103,23 +103,3 @@ RUN /bin/bash -c "source activate py3 && cd /usr/local/src/lightgbm/LightGBM/pyt
 RUN apt-get autoremove -y && apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     conda clean -a -y
-
-#################################################################################################################
-#           JUPYTER
-#################################################################################################################
-
-# password: keras
-# password key: --NotebookApp.password='sha1:98b767162d34:8da1bc3c75a0f29145769edc977375a373407824'
-
-# Add a notebook profile.
-RUN mkdir -p -m 700 ~/.jupyter/ && \
-    echo "c.NotebookApp.ip = '*'" >> ~/.jupyter/jupyter_notebook_config.py
-
-VOLUME /home
-WORKDIR /home
-
-# IPython
-EXPOSE 8888
-
-ENTRYPOINT [ "/tini", "--" ]
-CMD /bin/bash -c "source activate py3 && jupyter notebook --allow-root --no-browser --NotebookApp.password='sha1:98b767162d34:8da1bc3c75a0f29145769edc977375a373407824' && source deactivate"
